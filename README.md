@@ -2,6 +2,37 @@
 
 [![Build Status](https://travis-ci.org/earldouglas/swagger-test.svg?branch=master)](https://travis-ci.org/earldouglas/swagger-test) [![Coverage Status](https://coveralls.io/repos/earldouglas/swagger-test/badge.svg)](https://coveralls.io/r/earldouglas/swagger-test)
 
+## Specific to Motel fork
+
+We do not use any indirect test specifications; instead, either the test is direclty specified with a `x-amples` json array in the route method to be tested, or it is not tested at all. At the moment the fork differs from the original library in that it specifies the headers
+```
+{
+  "x-device-platform": "manage",
+  "Authorization": "Token token=\"w6IZDZ4ZaoM4UCygfCQGB2hM\""
+}
+```
+as well as hardcodes the root uri as `http://localhost:9000`. The fork also implements `test/api/swagger_test.js` slightly differently:
+```
+var swaggerTest = require('swagger-test');
+var swaggerSpec = require('../../api/swagger/swagger.json');
+var xamples = swaggerTest.parse(swaggerSpec);
+
+var preq = require('preq');
+var assert = require('assert');
+
+describe('specification-driven tests', function () {
+  xamples.forEach(function (xample) {
+    it(xample.description, function() {
+      return preq[xample.request.method]({uri: xample.request.uri, headers: xample.request.headers})
+      .then(function (response) {
+        assert.deepEqual(response.status, xample.response);
+      });
+    });
+  });
+});
+```
+This ensures that the headers is included in the request.
+
 ## Quick start
 
 Load the npm module:
